@@ -1,4 +1,4 @@
-mport pandas as pd
+import pandas as pd
 
 
 def _get_longlat(df, longlat):
@@ -48,7 +48,7 @@ def read_excel(io, longlat, properties=None, sheet_name=0, header=0):
         in a single column separated by a comma.
     properties : List of strings or None, default None
         Determines the columns to be stored in the GeoJSON's properties field.
-        None if all columns are to be stored or a list of column names for a subset.
+        None if all columns are stored or a list of column names for a subset.
     sheet_name : string or int, default 0
         Strings are used for sheet names, Integers are used in 0-indexed sheet positions.
     header : int, default 0
@@ -60,7 +60,14 @@ def read_excel(io, longlat, properties=None, sheet_name=0, header=0):
         DataFrame from the passed in Excel file.
     """
     df = pd.read_excel(io, sheet_name=sheet_name, header=header)
+
     df_longlat = _get_longlat(df, longlat)
-    df_properties = None # TODO
+
+    assert properties is None or isinstance(properties, list), \
+        'Expected "properties" to be either a list of strings or None. Found: %' % properties
+    if properties is None:
+        properties = df.columns.difference(longlat if isinstance(longlat, list) else [longlat])
+    df_properties = df[properties]
+
     return pd.concat([df_longlat, df_properties], axis=1)
 
