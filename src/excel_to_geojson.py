@@ -1,4 +1,6 @@
 import pandas as pd
+import geojson
+from geojson import Feature, Point, FeatureCollection
 
 
 def _get_longlat(df, longlat):
@@ -15,7 +17,7 @@ def _get_longlat(df, longlat):
     
     Returns
     -------
-    parsed : DataFrame
+    DataFrame
         DataFrame containing exactly two columns: longitude ('Long') and latitude ('Lat').
     """
     # longlat = ['name1', 'name2']
@@ -56,7 +58,7 @@ def read_excel(io, longlat, properties=None, sheet_name=0, header=0):
     
     Returns
     -------
-    parsed : DataFrame
+    DataFrame
         DataFrame from the passed in Excel file.
     """
     df = pd.read_excel(io, sheet_name=sheet_name, header=header)
@@ -70,4 +72,44 @@ def read_excel(io, longlat, properties=None, sheet_name=0, header=0):
     df_properties = df[properties]
 
     return pd.concat([df_longlat, df_properties], axis=1)
+
+
+def _create_feature_collection(df):
+    """
+    Creates a FeatureCollection for a given DataFrame.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame is expected to have columns named 'Long' and 'Lat' and
+        optionally any other property columns.
+    
+    Returns
+    -------
+    FeatureCollection
+        A collection of Features containing Point geometries.
+    """
+    fcollection = []
+    properties = df.columns.difference(['Long', 'Lat'])
+    for _, row in df.iterrows():
+        fcollection.append(Feature(geometry=Point((row['Long'], row['Lat'])),
+                                   properties={x:row[x] for x in properties}))
+    return FeatureCollection(fcollection)
+
+
+def write_geojson(df, path_out):
+    """
+    Writes the given DataFrame into a GeoJSON file.
+    
+    Parameters
+    ----------
+    df : DataFrame
+        The DataFrame is expected to have columns named 'Long' and 'Lat' and
+        optionally any other property columns.
+    path_out : string or file-like object
+    """
+    fcollection = _create_feature_collection(df)
+    if not path_out.endswith('.geojson'):
+        path_out += '.geojson'
+    geojson.dump(fcollection, path_out)
 
