@@ -1,7 +1,23 @@
-import pandas as pd
+mport pandas as pd
 
 
 def _get_longlat(df, longlat):
+    """
+    Extracts longitude and latitude from the given DataFrame.
+    
+    Parameters
+    ----------
+    df : DataFrame
+    longlat : string or list of two strings
+        List of two column names is used when longitude and latitude are stored in
+        two separat columns. String is used if longitude and latitude are stored
+        in a single column separated by a comma.
+    
+    Returns
+    -------
+    parsed : DataFrame
+        DataFrame containing exactly two columns: longitude ('Long') and latitude ('Lat').
+    """
     # longlat = ['name1', 'name2']
     # name1 and name2 refer to columns of longitude and latitude, respectively
     if isinstance(longlat, list):
@@ -20,6 +36,31 @@ def _get_longlat(df, longlat):
 
 
 def read_excel(io, longlat, properties=None, sheet_name=0, header=0):
+    """
+    Reads an Excel table containing geolocatiin data into a pandas DataFrame.
+    
+    Parameters
+    ----------
+    io : string, path object, file-like object, pandas ExcelFile, or xlrd workbook
+    longlat : string or list of two strings
+        List of two column names is used when longitude and latitude are stored in
+        two separat columns. String is used if longitude and latitude are stored
+        in a single column separated by a comma.
+    properties : List of strings or None, default None
+        Determines the columns to be stored in the GeoJSON's properties field.
+        None if all columns are to be stored or a list of column names for a subset.
+    sheet_name : string or int, default 0
+        Strings are used for sheet names, Integers are used in 0-indexed sheet positions.
+    header : int, default 0
+        Row (0-indexed) to use for the column labels of the parsed DataFrame.
+    
+    Returns
+    -------
+    parsed : DataFrame
+        DataFrame from the passed in Excel file.
+    """
     df = pd.read_excel(io, sheet_name=sheet_name, header=header)
     df_longlat = _get_longlat(df, longlat)
-    return df_longlat
+    df_properties = None # TODO
+    return pd.concat([df_longlat, df_properties], axis=1)
+
