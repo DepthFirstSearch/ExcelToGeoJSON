@@ -27,12 +27,12 @@ def _get_longlat(df, longlat):
             'Exactly two column names expected. Found: %r' % longlat
         assert isinstance(longlat[0], str) and isinstance(longlat[1], str), \
             'Expected "longlat" to be a list of two strings. Found: %r' % longlat
-        return pd.DataFrame({'Long':df[longlat[0]], 'Lat':df[longlat[1]]})
+        return pd.DataFrame({'Long':df[longlat[0]], 'Lat':df[longlat[1]]}).astype('float64')
     
     # longlat = 'name1'
     # name1 refers to column containing longitude and latitude, separated by a comma
     if isinstance(longlat, str):
-        return df[longlat].str.split(',', expand=True).rename(columns={0:'Long', 1:'Lat'})
+        return df[longlat].str.split(',', expand=True).rename(columns={0:'Long', 1:'Lat'}).astype('float64')
     
     raise TypeError('Parameter "longlat" is neither a string nor a list of strings')
 
@@ -106,10 +106,26 @@ def write_geojson(df, path_out):
     df : DataFrame
         The DataFrame is expected to have columns named 'Long' and 'Lat' and
         optionally any other property columns.
-    path_out : string or file-like object
+    path_out : string
     """
     fcollection = _create_feature_collection(df)
     if not path_out.endswith('.geojson'):
         path_out += '.geojson'
-    geojson.dump(fcollection, path_out)
+    geojson.dump(fcollection, open(path_out, 'w'))
+
+
+def parse_excel(path_in, path_out, longlat, properties=None, sheet_name=0, header=0):
+    """
+    Parses an Excel file containing geolocation information to a GeoJSON file.
+    
+    Parameters
+    ----------
+    path_in : string, path object, file-like object, pandas ExcelFile, or xlrd workbook
+    path_out : string
+    
+    For other parameters, see: read_excel
+    """
+    write_geojson(df=read_excel(io=path_in, longlat=longlat, properties=properties,
+                                sheet_name=sheet_name, header=header),
+                  path_out=path_out)
 
