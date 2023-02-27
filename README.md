@@ -1,6 +1,9 @@
-# ExcelToGeoJSON
-Functionality for transforming an Excel file containing geolocation information to a GeoJSON file
+# Excel2GeoJSON
+Python script to transform an Excel file containing geolocation information to a GeoJSON file.
 
-## Use Case
-The scripts are mainly for a personal project and have most likely no public use.
-(They could be useful for a reference on how to work with Excel, Pandas and GeoJSON in Python though.)
+## How To
+Simply execute:
+```
+parse_excel(path_in, path_out, longlat)
+```
+where `longlat` is a list of two header names for the Longitude and Latitude columns in the Excel file.
